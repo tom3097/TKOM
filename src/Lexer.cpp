@@ -113,6 +113,28 @@ std::string Lexer::getExpPart()
 }
 
 
+std::string Lexer::getDotPart()
+{
+	std::string value;
+	value.push_back(source.currentChar());
+	source.nextChar();
+	if (source.getFoundEOF())
+		ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", "End Of File");
+	if (isdigit(source.currentChar()))
+	{
+		do
+		{
+			value.push_back(source.currentChar());
+			source.nextChar();
+		} while (!source.getFoundEOF() && isdigit(source.currentChar()));
+		return value;
+	}
+	std::string found;
+	found.push_back(source.currentChar());
+	ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", found);
+}
+
+
 Lexer::checkResult Lexer::NumberToken()
 {
 	Token token;
@@ -140,37 +162,23 @@ Lexer::checkResult Lexer::NumberToken()
 		}
 		if (source.currentChar() == '.')
 		{
-			value.push_back(source.currentChar());
-			source.nextChar();
+			value = value + getDotPart();
 			if (source.getFoundEOF())
-				ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", "End Of File");
-			if (isdigit(source.currentChar()))
 			{
-				do
-				{
-					value.push_back(source.currentChar());
-					source.nextChar();
-				} while (!source.getFoundEOF() && isdigit(source.currentChar()));
-				if (source.getFoundEOF())
-				{
-					token.setValue(value);
-					token.setType(TokenType::IntFrac);
-					return std::make_pair(true, token);
-				}
-				if (source.currentChar() == 'e' || source.currentChar() == 'E')
-				{
-					value = value + getExpPart();
-					token.setValue(value);
-					token.setType(TokenType::IntFracExp);
-					return std::make_pair(true, token);
-				}
 				token.setValue(value);
 				token.setType(TokenType::IntFrac);
 				return std::make_pair(true, token);
 			}
-			std::string found;
-			found.push_back(source.currentChar());
-			ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", found);
+			if (source.currentChar() == 'e' || source.currentChar() == 'E')
+			{
+				value = value + getExpPart();
+				token.setValue(value);
+				token.setType(TokenType::IntFracExp);
+				return std::make_pair(true, token);
+			}
+			token.setValue(value);
+			token.setType(TokenType::IntFrac);
+			return std::make_pair(true, token);
 		}
 		token.setValue(value);
 		token.setType(TokenType::Int);

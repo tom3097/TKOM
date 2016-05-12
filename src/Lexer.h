@@ -18,6 +18,7 @@ class Lexer
 
 	std::string check4Get3HexDigits();
 	std::string getExpPart();
+	std::string getDotPart();
 
 	void skipWhitespaces();
 	checkResult EOFToken();
