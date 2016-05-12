@@ -7,12 +7,17 @@
 #include "ErrorsCommunicator.h"
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <array>
 
 class Lexer
 {
 	typedef std::pair<bool, Token> checkResult;
 	std::vector<Token> tokens;
 	Source source;
+
+	std::string check4Get3HexDigits();
+	std::string getExpPart();
 
 	void skipWhitespaces();
 	checkResult EOFToken();

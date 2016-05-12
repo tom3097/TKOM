@@ -1,8 +1,8 @@
 VAL: { TYPE: LeftCurlyBracket LINE: 1 CHAR: 2
 VAL: "hello" TYPE: String LINE: 2 CHAR: 5
 VAL: : TYPE: Colon LINE: 2 CHAR: 12
-VAL: "world" TYPE: String LINE: 2 CHAR: 14
-VAL: , TYPE: Comma LINE: 2 CHAR: 21
+VAL: "worl\nd" TYPE: String LINE: 2 CHAR: 14
+VAL: , TYPE: Comma LINE: 2 CHAR: 23
 VAL: "t" TYPE: String LINE: 3 CHAR: 5
 VAL: : TYPE: Colon LINE: 3 CHAR: 8
 VAL: true TYPE: True LINE: 3 CHAR: 10
@@ -43,5 +43,8 @@ VAL: "ifrexp" TYPE: String LINE: 10 CHAR: 5
 VAL: : TYPE: Colon LINE: 10 CHAR: 13
 VAL: 2.345e-30 TYPE: IntFracExp LINE: 10 CHAR: 15
 VAL: , TYPE: Comma LINE: 10 CHAR: 24
-VAL: } TYPE: RightCurlyBracket LINE: 11 CHAR: 1
-VAL: EndOfFile TYPE: EndOfFile LINE: 13 CHAR: 1
+VAL: "fkdsk" TYPE: String LINE: 11 CHAR: 5
+VAL: : TYPE: Colon LINE: 11 CHAR: 12
+VAL: "fjv\u3444\tBAgjd" TYPE: String LINE: 11 CHAR: 14
+VAL: } TYPE: RightCurlyBracket LINE: 12 CHAR: 1
+VAL: EndOfFile TYPE: EndOfFile LINE: 14 CHAR: 1

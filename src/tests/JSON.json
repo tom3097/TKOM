@@ -1,5 +1,5 @@
 {
-    "hello": "world",
+    "hello": "worl\nd",
     "t": true ,
     "f": false,
     "n": null,
@@ -8,5 +8,6 @@
     "a": [1, 2.34, 3.5E-10, 4E1],
     "iexp": 4E+10,
     "ifrexp": 2.345e-30,
+    "fkdsk": "fjv\u3444\tBAgjd"
 }
 

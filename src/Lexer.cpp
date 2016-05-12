@@ -84,6 +84,35 @@ Lexer::checkResult Lexer::NonQuotWordToken()
 }
 
 
+std::string Lexer::getExpPart()
+{
+	std::string value;
+	value.push_back(source.currentChar());
+	source.nextChar();
+	if (source.getFoundEOF())
+		ErrorsCommunicator::communicateAndExit(source.getPosition(), "'+' or '-' or digit", "End Of File");
+	if (source.currentChar() == '+' || source.currentChar() == '-')
+	{
+		value.push_back(source.currentChar());
+		source.nextChar();
+		if (source.getFoundEOF())
+			ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", "End Of File");
+	}
+	if (isdigit(source.currentChar()))
+	{
+		do
+		{
+			value.push_back(source.currentChar());
+			source.nextChar();
+		} while (!source.getFoundEOF() && isdigit(source.currentChar()));
+		return value;
+	}
+	std::string found;
+	found.push_back(source.currentChar());
+	ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", found);
+}
+
+
 Lexer::checkResult Lexer::NumberToken()
 {
 	Token token;
@@ -104,31 +133,10 @@ Lexer::checkResult Lexer::NumberToken()
 		}
 		if (source.currentChar() == 'e' || source.currentChar() == 'E')
 		{
-			value.push_back(source.currentChar());
-			source.nextChar();
-			if (source.getFoundEOF())
-				ErrorsCommunicator::communicateAndExit(source.getPosition(), "'+' or '-' or digit", "End Of File");
-			if (source.currentChar() == '+' || source.currentChar() == '-')
-			{
-				value.push_back(source.currentChar());
-				source.nextChar();
-				if (source.getFoundEOF())
-					ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", "End Of File");
-			}
-			if (isdigit(source.currentChar()))
-			{
-				do
-				{
-					value.push_back(source.currentChar());
-					source.nextChar();
-				} while (!source.getFoundEOF() && isdigit(source.currentChar()));
-				token.setValue(value);
-				token.setType(TokenType::IntExp);
-				return std::make_pair(true, token);
-			}
-			std::string found;
-			found.push_back(source.currentChar());
-			ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", found);
+			value = value + getExpPart();
+			token.setValue(value);
+			token.setType(TokenType::IntExp);
+			return std::make_pair(true, token);
 		}
 		if (source.currentChar() == '.')
 		{
@@ -151,31 +159,10 @@ Lexer::checkResult Lexer::NumberToken()
 				}
 				if (source.currentChar() == 'e' || source.currentChar() == 'E')
 				{
-					value.push_back(source.currentChar());
-					source.nextChar();
-					if (source.getFoundEOF())
-						ErrorsCommunicator::communicateAndExit(source.getPosition(), "'+' or '-' or digit", "End Of File");
-					if (source.currentChar() == '+' || source.currentChar() == '-')
-					{
-						value.push_back(source.currentChar());
-						source.nextChar();
-						if (source.getFoundEOF())
-							ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", "End Of File");
-					}
-					if (isdigit(source.currentChar()))
-					{
-						do
-						{
-							value.push_back(source.currentChar());
-							source.nextChar();
-						} while (!source.getFoundEOF() && isdigit(source.currentChar()));
-						token.setValue(value);
-						token.setType(TokenType::IntFracExp);
-						return std::make_pair(true, token);
-					}
-					std::string found;
-					found.push_back(source.currentChar());
-					ErrorsCommunicator::communicateAndExit(source.getPosition(), "digit", found);
+					value = value + getExpPart();
+					token.setValue(value);
+					token.setType(TokenType::IntFracExp);
+					return std::make_pair(true, token);
 				}
 				token.setValue(value);
 				token.setType(TokenType::IntFrac);
@@ -198,15 +185,41 @@ Lexer::checkResult Lexer::QuotWordToken()
 	Token token;
 	token.setPosition(source.getPosition());
 	std::string value;
+	std::array<char,9> arr{ {'"','\\','/','b','f','n','r','t','u'} };
 	if (source.currentChar() == '"')
 	{
+		bool backslashFound = false;
 		do
 		{
+			if(!backslashFound && source.currentChar() == '\\')
+				backslashFound = true;
+			else if (backslashFound && std::find(arr.begin(), arr.end(), source.currentChar()) != arr.end())
+			{
+				backslashFound = false;
+				if(source.currentChar() == 'u')
+				{
+					value.push_back(source.currentChar());
+					source.nextChar();
+					value = value + check4Get3HexDigits();
+				}
+			}
+			else if(backslashFound)
+			{
+				std::string expected = "'\"'' or '\\'' or '/'' or 'b' or 'f' or 'n' or 'r' or 't' or 'u'";
+				std::string found;
+				found.push_back(source.currentChar());
+				ErrorsCommunicator::communicateAndExit(source.getPosition(), expected, found);
+			}
 			value.push_back(source.currentChar());
 			source.nextChar();
-		} while (!source.getFoundEOF() && source.currentChar() != '"');
-		if (source.getFoundEOF())
-			ErrorsCommunicator::communicateAndExit(source.getPosition(), "char or \"", "End Of File");
+		} while (!source.getFoundEOF() && (source.currentChar() != '"' || backslashFound));
+		if (source.getFoundEOF() && !backslashFound)
+			ErrorsCommunicator::communicateAndExit(source.getPosition(), "char", "End Of File");
+		if (source.getFoundEOF() && backslashFound)
+		{
+			std::string expected = "'\"'' or '\\'' or '/'' or 'b' or 'f' or 'n' or 'r' or 't' or 'u'";
+			ErrorsCommunicator::communicateAndExit(source.getPosition(), expected, "End Of File");
+		}
 		value.push_back(source.currentChar());
 		source.nextChar();
 		token.setValue(value);
@@ -217,12 +230,39 @@ Lexer::checkResult Lexer::QuotWordToken()
 }
 
 
+std::string Lexer::check4Get3HexDigits()
+{
+	std::string value;
+	std::array<char,6> arr{ {'A','B','C','D','E','F'} };
+	for(int i = 0; i < 3; ++i)
+	{
+		if (source.getFoundEOF())
+			ErrorsCommunicator::communicateAndExit(source.getPosition(), "hexadecimal digit", "End Of File");
+		if(!isdigit(source.currentChar()) && std::find(arr.begin(), arr.end(), source.currentChar()) == arr.end())
+		{
+			std::string found;
+			found.push_back(source.currentChar());
+			ErrorsCommunicator::communicateAndExit(source.getPosition(), "hexadecimal digit", found);
+		}
+		value.push_back(source.currentChar());
+		source.nextChar();
+	}
+	if (source.getFoundEOF())
+		ErrorsCommunicator::communicateAndExit(source.getPosition(), "hexadecimal digit", "End Of File");
+	if(!isdigit(source.currentChar()) && std::find(arr.begin(), arr.end(), source.currentChar()) == arr.end())
+	{
+		std::string found;
+		found.push_back(source.currentChar());
+		ErrorsCommunicator::communicateAndExit(source.getPosition(), "hexadecimal digit", found);
+	}
+	return value;
+}
+
 
 Token Lexer::nextToken()
 {
 	checkResult result;
 	skipWhitespaces();
-
 	result = EOFToken();
 	if (result.first)
 		return result.second;
@@ -238,7 +278,6 @@ Token Lexer::nextToken()
 	result = NumberToken();
 	if (result.first)
 		return result.second;
-
 	std::string expected = "End Of File or '{' or '}' or '[' or ']' or ':' or ',' or \" or \" or alpha or digit";
 	std::string found;
 	found.push_back(source.currentChar());
