@@ -5,14 +5,17 @@ set(CMAKE_BUILD_TYPE Debug)
 include_directories(.
                     src
                     src/structs
-                    src/structs/tokens)					
+                    src/structs/tokens
+                    src/structs/objects)					
 set(SOURCES
     src/structs/tokens/Token.cpp
+    src/structs/objects/Objects.cpp
     src/structs/TextPosition.cpp
     src/ErrorsCommunicator.cpp
     src/Source.cpp
     src/Lexer.cpp
     src/main.cpp
+    src/Parser.cpp
    )
 
 

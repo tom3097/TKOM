@@ -28,7 +28,10 @@ class Lexer
 	checkResult NumberToken();
 public:
 	Lexer(std::string JSONpath);
+	Lexer();
 	~Lexer();
+
+	void setJSON(std::string JSONpath);
 
 	Token nextToken();
 };

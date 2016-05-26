@@ -11,7 +11,8 @@ class ErrorsCommunicator
 	ErrorsCommunicator();
 public:
 	~ErrorsCommunicator();
-	static void communicateAndExit(TextPosition position, std::string expected, std::string found);
+	static void communicateAndExit(std::string module, TextPosition position, 
+		std::string expected, std::string found);
 };
 
 #endif
