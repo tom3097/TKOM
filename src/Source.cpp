@@ -9,11 +9,12 @@ Source::Source(std::string JSONpath) : position(TextPosition()), foundEOFValue(f
 		std::cerr << "FATAL ERROR: Can not open file " << JSONpath << std::endl;
 		std::exit(-1);
 	}
-	nextChar();
+	if (!JSON.get(currentCharValue))
+		foundEOFValue = true;
 }
 
 
-Source::Source() : foundEOFValue(true)
+Source::Source() : foundEOFValue(true), JSON(nullptr)
 {
 }
 
@@ -21,6 +22,18 @@ Source::Source() : foundEOFValue(true)
 Source::~Source()
 {
 	JSON.close();
+}
+
+
+void Source::goToBegin()
+{
+	if(!JSON.is_open())
+		return;
+	JSON.clear();
+	JSON.seekg(0, std::ios::beg);
+	foundEOFValue = false;
+	if (!JSON.get(currentCharValue))
+		foundEOFValue = true;
 }
 
 
@@ -51,7 +64,8 @@ void Source::setJSON(std::string JSONpath)
 		std::cerr << "FATAL ERROR: Can not open file " << JSONpath << std::endl;
 		std::exit(-1);
 	}
-	nextChar();
+	if (!JSON.get(currentCharValue))
+		foundEOFValue = true;
 }
 
 

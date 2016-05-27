@@ -6,6 +6,7 @@
 #include "ErrorsCommunicator.h"
 #include <iostream>
 #include <string>
+#include <functional>
 
 class Parser
 {
@@ -20,6 +21,13 @@ class Parser
 	PObject parseValue();
 	PObject parseArray();
 
+	PObject parseEndOfFile();
+
+	PObject beginSingleJSON();
+	PObject beginMultiJSON();
+	PObject middleMultiJSON();
+	PObject endSingleMultiJSON();
+
 	Lexer lexer;
 	Token currToken;
 public:
@@ -27,9 +35,14 @@ public:
 	Parser();
 	~Parser();
 
+	std::function<PObject ()> nextJSON;
+
+	void goToBegin();
+
 	void setJSON(std::string JSONpath);
 
-	PObject parse();
+	PObject parseAll();
+
 };
 
 #endif

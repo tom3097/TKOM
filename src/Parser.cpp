@@ -5,6 +5,11 @@ Parser::Parser(std::string JSONpath)
 {
 	lexer.setJSON(JSONpath);
 	nextToken();
+
+	nextJSON = std::bind(&Parser::beginSingleJSON, this);
+
+	if(isCurrTokenType(TokenType::LeftSquareBracket))
+		nextJSON = std::bind(&Parser::beginMultiJSON, this);
 }
 
 Parser::Parser()
@@ -36,6 +41,18 @@ bool Parser::isCurrTokenType(TokenType type)
 }
 
 
+void Parser::goToBegin()
+{
+	lexer.goToBegin();
+	nextToken();
+	
+	nextJSON = std::bind(&Parser::beginSingleJSON, this);
+
+	if(isCurrTokenType(TokenType::LeftSquareBracket))
+		nextJSON = std::bind(&Parser::beginMultiJSON, this);
+}
+
+
 void Parser::accept(TokenType type)
 {
 	if(isCurrTokenType(type))
@@ -48,12 +65,61 @@ void Parser::accept(TokenType type)
 }
 
 
-PObject Parser::parse()
+PObject Parser::parseAll()
 {
+	lexer.goToBegin();
+	nextToken();
 	if(isCurrTokenType(TokenType::LeftSquareBracket))
-		return parseJSONArray();
-	else
+	{
+		PObject pobj = parseJSONArray();
+		accept(TokenType::EndOfFile);
+		nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
+		return pobj;
+	}
+	PObject pobj = parseJSON();
+	accept(TokenType::EndOfFile);
+	nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
+	return pobj;
+}
+
+
+PObject Parser::beginSingleJSON()
+{
+	nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
+	return parseJSON();
+}
+
+
+PObject Parser::endSingleMultiJSON()
+{
+	return parseEndOfFile();
+}
+
+
+PObject Parser::beginMultiJSON()
+{
+	accept(TokenType::LeftSquareBracket);
+	if(isCurrTokenType(TokenType::RightSquareBracket))
+	{
+		accept(TokenType::RightSquareBracket);
+		nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
+		return parseEndOfFile();
+	}
+	nextJSON = std::bind(&Parser::middleMultiJSON, this);
+	return parseJSON();
+}
+
+
+PObject Parser::middleMultiJSON()
+{
+	if(isCurrTokenType(TokenType::Comma))
+	{
+		accept(TokenType::Comma);
 		return parseJSON();
+	}
+	accept(TokenType::RightSquareBracket);
+	nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
+	return parseEndOfFile();
 }
 
 
@@ -191,5 +257,13 @@ PObject Parser::parsePair()
 	accept(TokenType::Colon);
 	PObject val = parseValue();
 	pobj.get()->addChild(val);
+	return pobj;
+}
+
+
+PObject Parser::parseEndOfFile()
+{
+	PObject pobj = std::make_shared<EndOfFileObject>();
+	accept(TokenType::EndOfFile);
 	return pobj;
 }

@@ -20,6 +20,12 @@ void Lexer::setJSON(std::string JSONpath)
 }
 
 
+void Lexer::goToBegin()
+{
+	source.goToBegin();
+}
+
+
 void Lexer::skipWhitespaces()
 {
 	while (!source.getFoundEOF() && isspace(source.currentChar()))
@@ -148,49 +154,64 @@ Lexer::checkResult Lexer::NumberToken()
 	Token token;
 	token.setPosition(source.getPosition());
 	std::string value;
-	if (isdigit(source.currentChar()))
+	if (isdigit(source.currentChar()) || source.currentChar() == '-')
 	{
-		do
+		if(source.currentChar() == '-')
 		{
 			value.push_back(source.currentChar());
 			source.nextChar();
-		} while (!source.getFoundEOF() && isdigit(source.currentChar()));
-		if (source.getFoundEOF())
-		{
-			token.setValue(value);
-			token.setType(TokenType::Int);
-			return std::make_pair(true, token);
 		}
-		if (source.currentChar() == 'e' || source.currentChar() == 'E')
+
+		if (isdigit(source.currentChar()))
 		{
-			value = value + getExpPart();
-			token.setValue(value);
-			token.setType(TokenType::IntExp);
-			return std::make_pair(true, token);
-		}
-		if (source.currentChar() == '.')
-		{
-			value = value + getDotPart();
+			do
+			{
+				value.push_back(source.currentChar());
+				source.nextChar();
+			} while (!source.getFoundEOF() && isdigit(source.currentChar()));
 			if (source.getFoundEOF())
 			{
 				token.setValue(value);
-				token.setType(TokenType::IntFrac);
+				token.setType(TokenType::Int);
 				return std::make_pair(true, token);
 			}
 			if (source.currentChar() == 'e' || source.currentChar() == 'E')
 			{
 				value = value + getExpPart();
 				token.setValue(value);
-				token.setType(TokenType::IntFracExp);
+				token.setType(TokenType::IntExp);
+				return std::make_pair(true, token);
+			}
+			if (source.currentChar() == '.')
+			{
+				value = value + getDotPart();
+				if (source.getFoundEOF())
+				{
+					token.setValue(value);
+					token.setType(TokenType::IntFrac);
+					return std::make_pair(true, token);
+				}
+				if (source.currentChar() == 'e' || source.currentChar() == 'E')
+				{
+					value = value + getExpPart();
+					token.setValue(value);
+					token.setType(TokenType::IntFracExp);
+					return std::make_pair(true, token);
+				}
+				token.setValue(value);
+				token.setType(TokenType::IntFrac);
 				return std::make_pair(true, token);
 			}
 			token.setValue(value);
-			token.setType(TokenType::IntFrac);
+			token.setType(TokenType::Int);
 			return std::make_pair(true, token);
 		}
-		token.setValue(value);
-		token.setType(TokenType::Int);
-		return std::make_pair(true, token);
+		else
+		{
+			std::string found;
+			found.push_back(source.currentChar());
+			ErrorsCommunicator::communicateAndExit("LEXER", source.getPosition(), "digit", found);
+		}
 	}
 	return std::make_pair(false, token);
 }
@@ -249,7 +270,7 @@ Lexer::checkResult Lexer::QuotWordToken()
 std::string Lexer::check4Get3HexDigits()
 {
 	std::string value;
-	std::array<char,6> arr{ {'A','B','C','D','E','F'} };
+	std::array<char,12> arr{ {'A','B','C','D','E','F','a','b','c','d','e','f'} };
 	for(int i = 0; i < 3; ++i)
 	{
 		if (source.getFoundEOF())

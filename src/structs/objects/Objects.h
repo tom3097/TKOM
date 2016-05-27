@@ -133,4 +133,12 @@ public:
 	ObjectType getType();
 };
 
+class EndOfFileObject: public Object
+{
+public:
+	EndOfFileObject();
+	~EndOfFileObject();
+	ObjectType getType();
+};
+
 #endif

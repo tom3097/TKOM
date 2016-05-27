@@ -228,3 +228,18 @@ ObjectType ArrayObject::getType()
 	return ObjectType::Array;
 }
 
+
+EndOfFileObject::EndOfFileObject(): Object("EndOfFile")
+{
+}
+
+
+EndOfFileObject::~EndOfFileObject()
+{
+}
+
+
+ObjectType EndOfFileObject::getType()
+{
+	return ObjectType::EndOfFile;
+}

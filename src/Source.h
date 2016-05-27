@@ -20,6 +20,8 @@ public:
 	void setPosition(TextPosition newPosition);
 	void setJSON(std::string JSONpath);
 
+	void goToBegin();
+
 	TextPosition getPosition();
 	bool getFoundEOF();
 

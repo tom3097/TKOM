@@ -19,6 +19,7 @@ enum class ObjectType : unsigned int
 	Pair = 10,
 	Array = 11,
 	None = 12,
+	EndOfFile = 13,
 };
 
 const std::unordered_map<unsigned int, std::string> objectTypeNames = {
@@ -35,6 +36,7 @@ const std::unordered_map<unsigned int, std::string> objectTypeNames = {
 	{ 10, "Pair" },
 	{ 11, "Array" },
 	{ 12, "None" },
+	{ 13, "EndOfFile" },
 };
 
 inline const std::string getObjectTypeName(const ObjectType& objectType)

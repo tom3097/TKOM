@@ -31,6 +31,8 @@ public:
 	Lexer();
 	~Lexer();
 
+	void goToBegin();
+
 	void setJSON(std::string JSONpath);
 
 	Token nextToken();
