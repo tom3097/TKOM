@@ -23,6 +23,18 @@ void Object::addChild(PObject pobj)
 }
 
 
+PObject Object::getChild(unsigned idx)
+{
+	return children[idx];
+}
+
+
+unsigned Object::getChildrenSize()
+{
+	return children.size();
+}
+
+
 void Object::pvPrint(std::string tabs)
 {
 	std::cout << tabs << getObjectTypeName(getType()) << "-->" << value << std::endl;

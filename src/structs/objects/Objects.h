@@ -21,6 +21,8 @@ public:
 	~Object();
 	std::string getValue();
 	void addChild(PObject pobj);
+	PObject getChild(unsigned idx);
+	unsigned getChildrenSize();
 	void print();
 	virtual ObjectType getType() = 0;
 };
