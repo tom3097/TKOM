@@ -143,7 +143,7 @@ void* Factory::getArrayValue(PObject patternField, PObject dataField)
 		PObject pattern = patternField.get()->getChild(1).get()->getChild(0);
 		std::vector<Product*>* values = new std::vector<Product*>();
 		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-    {
+		{
 			PObject JSONobject = dataValues.get()->getChild(idx);;
 		 	Product* product = getJSONValue(pattern, JSONobject);
 		 	if(product == nullptr)
