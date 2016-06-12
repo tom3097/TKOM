@@ -1,0 +1,45 @@
+[
+	{
+		"intMember1": 5,
+		"doubleMember1": 3.67,
+		"intVectorMember1": [ 5, 7, 3, 8, 10]
+	},
+	{
+		"floatMember1": 4.67,
+		"boolMember1": false,
+		"classAMember": {
+			"intVectorMember1": [1,2,3],
+			"doubleMember1": 3.75,
+			"intMember1": 1
+		}
+	},
+	{
+		"classAMember": {
+			"intVectorMember1": [1,2,3],
+			"doubleMember1": 3.75,
+			"intMember1": 19
+		},
+		"stringMember1": "string1",
+		"stringMember2": "string2",
+		"classBVectorMember1": [
+			{
+				"floatMember1": 4.67,
+				"boolMember1": false,
+				"classAMember": {
+					"intVectorMember1": [1,2,3],
+					"doubleMember1": 3.75,
+					"intMember1": 1
+				}
+			},
+			{
+				"floatMember1": 12.576,
+				"boolMember1": true,
+				"classAMember": {
+					"intVectorMember1": [5,76,4,6,4,6],
+					"doubleMember1": 6.78,
+					"intMember1": 1
+				}
+			}
+		]
+	}
+]

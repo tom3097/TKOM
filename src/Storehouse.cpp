@@ -19,6 +19,14 @@ Storehouse::~Storehouse()
 }
 
 
+void Storehouse::setJSON(std::string configJSONpath)
+{
+	Parser parser(configJSONpath);
+	PObject pobj = parser.parseAll();
+	analyzeAndInit(pobj);
+}
+
+
 void Storehouse::communicateErrorAndExit(std::string str)
 {
 	std::cout << "[STOREHOUSE] Error: " << str << std::endl;
@@ -33,6 +41,23 @@ void Storehouse::printRoots()
 		std::cout << "Class name: " << roots[idx].first << std::endl;
 		roots[idx].second.get()->print();
 	}
+}
+
+
+PObject Storehouse::getRoot(int idx)
+{
+	return roots[idx].second;
+}
+
+
+int Storehouse::getJSONbyID(std::string id)
+{
+	for(unsigned idx = 0; idx < roots.size(); idx ++)
+	{
+		if(roots[idx].first == id)
+			return idx;
+	}
+	return -1;
 }
 
 
@@ -86,7 +111,7 @@ void Storehouse::analyzeJSON(PObject pobj)
 	}
 	if(!classIDfound)
 		communicateErrorAndExit("class type not found");
-	roots.push_back(std::make_pair(className, pobj));
+	roots.push_back(std::make_pair(className.substr(1, className.size()-2), pobj));
 }
 
 
@@ -164,3 +189,4 @@ bool Storehouse::compareTypes(PObject patternValue, PObject dataValue)
 	}
 	return compareSampleTypes(patternValue, dataValue);
 }
+

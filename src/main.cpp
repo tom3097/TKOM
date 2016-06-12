@@ -1,30 +1,32 @@
 #include <iostream>
 #include <fstream>
-#include "Source.h"
-#include "Lexer.h"
-#include "Parser.h"
+#include "Factory.h"
+#include "src/tests/testCase1/Testcase1.h"
 
+
+Product* createClassA()
+{
+	return new ClassA();
+}
+
+Product * createClassB()
+{
+	return new ClassB();
+}
+
+Product * createClassC()
+{
+	return new ClassC();
+}
 
 int main()
 {
-	Parser parser("../src/tests/JSON.json");
-	PObject pobj = parser.parseAll();
-	pobj.get()->print();
-	std::cout << "____Whoops! Cant find any json____" << std::endl;
-	parser.nextJSON().get()->print();
-
-	parser.goToBegin();
-	std::cout << "______________Pierwszy____________" << std::endl;
-	parser.nextJSON().get()->print();
-	std::cout << "_______________Drugi______________" << std::endl;
-	parser.nextJSON().get()->print();
-
-	for(int i = 0; i < 100; ++i)
-		parser.nextJSON();
-
-	std::cout << "____Whoops! Cant find any json____" << std::endl;
-	parser.nextJSON().get()->print();
-	std::cout << "____Whoops! Cant find any json____" << std::endl;
-	parser.nextJSON().get()->print();
+	Factory factory("../src/tests/testCase1/confJSON.json", "../src/tests/testCase1/dataJSON.json");
+	factory.registerProduct(ClassA::getID(), createClassA);
+	factory.registerProduct(ClassB::getID(), createClassB);
+	factory.registerProduct(ClassC::getID(), createClassC);
+	std::vector<Product*> products = factory.getProductsByID(ClassC::getID());
+	for (unsigned i = 0; i < products.size(); ++i)
+		products[i]->print();
 	return 0;
 }

@@ -4,7 +4,6 @@
 VariableType::VariableType()
 {
 	std::vector<ObjectType> boolType = { ObjectType::True, ObjectType::False };
-	std::vector<ObjectType> shortType = { ObjectType::Int };
 	std::vector<ObjectType> intType = { ObjectType::Int, ObjectType::IntExp };
 	std::vector<ObjectType> longType = { ObjectType::Int, ObjectType::IntExp };
 	std::vector<ObjectType> floatType = { ObjectType::IntFrac };
@@ -12,7 +11,6 @@ VariableType::VariableType()
 	std::vector<ObjectType> stringType = { ObjectType::String };
 	typesTranslator = {
 		{ "\"bool\"", boolType },
-		{ "\"short\"", shortType },
 	 	{ "\"int\"", intType },
 	 	{ "\"long\"", longType },
 	 	{ "\"float\"", floatType },

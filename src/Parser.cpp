@@ -26,6 +26,11 @@ void Parser::setJSON(std::string JSONpath)
 {
 	lexer.setJSON(JSONpath);
 	nextToken();
+
+	nextJSON = std::bind(&Parser::beginSingleJSON, this);
+
+	if(isCurrTokenType(TokenType::LeftSquareBracket))
+		nextJSON = std::bind(&Parser::beginMultiJSON, this);
 }
 
 
@@ -85,6 +90,7 @@ PObject Parser::parseAll()
 
 PObject Parser::beginSingleJSON()
 {
+	//std::cout << "beginSingleJSON" << std::endl;
 	nextJSON = std::bind(&Parser::endSingleMultiJSON, this);
 	return parseJSON();
 }
@@ -92,12 +98,14 @@ PObject Parser::beginSingleJSON()
 
 PObject Parser::endSingleMultiJSON()
 {
+	//std::cout << "endSingleMultiJSON" << std::endl;
 	return parseEndOfFile();
 }
 
 
 PObject Parser::beginMultiJSON()
 {
+	//std::cout << "beginMultiJSON" << std::endl;
 	accept(TokenType::LeftSquareBracket);
 	if(isCurrTokenType(TokenType::RightSquareBracket))
 	{
@@ -112,6 +120,7 @@ PObject Parser::beginMultiJSON()
 
 PObject Parser::middleMultiJSON()
 {
+	//std::cout << "middleMultiJSON" << std::endl;
 	if(isCurrTokenType(TokenType::Comma))
 	{
 		accept(TokenType::Comma);

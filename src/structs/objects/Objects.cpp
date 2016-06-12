@@ -45,6 +45,7 @@ void Object::pvPrint(std::string tabs)
 
 void Object::print()
 {
+	std::cout << "Printing:\n";
 	pvPrint("");
 }
 

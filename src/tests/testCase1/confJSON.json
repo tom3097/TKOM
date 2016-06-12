@@ -1,0 +1,43 @@
+[
+	{
+		"ClassA": "classID",
+		"intMember1": "int",
+		"doubleMember1": "double",
+		"intVectorMember1": [ "int" ]
+	},
+	{
+		"ClassB": "classID",
+		"floatMember1": "float",
+		"boolMember1": "bool",
+		"classAMember": {
+			"intVectorMember1": [ "int" ],
+			"doubleMember1": "double",
+			"intMember1": "int",
+			"ClassA": "classID"
+		}
+	},
+	{
+		"ClassC": "classID",
+		"classAMember": {
+			"ClassA": "classID",
+			"intVectorMember1": ["int"],
+			"doubleMember1": "double",
+			"intMember1": "int"
+		},
+		"stringMember1": "string",
+		"stringMember2": "string",
+		"classBVectorMember1": [
+			{
+				"ClassB": "classID",
+				"floatMember1": "float",
+				"boolMember1": "bool",
+				"classAMember": {
+					"ClassA": "classID",
+					"intVectorMember1": ["int"],
+					"doubleMember1": "double",
+					"intMember1": "int"
+				}
+			}
+		]
+	}
+]

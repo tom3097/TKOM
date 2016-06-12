@@ -7,18 +7,21 @@ include_directories(.
                     src/structs
                     src/structs/tokens
                     src/structs/objects
-                    src/structs/variables)					
+                    src/structs/variables
+                    src/tests/testCase1)					
 set(SOURCES
     src/structs/tokens/Token.cpp
     src/structs/objects/Objects.cpp
     src/structs/TextPosition.cpp
     src/structs/variables/VariableType.cpp
+    src/tests/testCase1/Testcase1.cpp
     src/ErrorsCommunicator.cpp
     src/Source.cpp
     src/Lexer.cpp
     src/main.cpp
     src/Parser.cpp
     src/Storehouse.cpp
+    src/Factory.cpp
    )
 
 
