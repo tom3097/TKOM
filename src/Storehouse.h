@@ -20,6 +20,7 @@ public:
 	Storehouse(std::string configJSONpath);
 	Storehouse();
 	~Storehouse();
+	
 	void setJSON(std::string configJSONpath);
 	void printRoots();
 	bool compareJSONs(PObject pattern, PObject data);

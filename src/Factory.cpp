@@ -13,77 +13,10 @@ Factory::~Factory()
 }
 
 
-void Factory::registerProduct(std::string id, handler creator)
-{
-	idsTranslator[id] = creator;
-}
-
-
-void Factory::printProducts()
-{
-	for(auto pair: idsTranslator)
-		std::cout << pair.first << std::endl;
-}
-
-
-void Factory::printCommunicate(std::string comm)
-{
-	std::cout << "[FACTORY] " << comm << std::endl;
-}
-
-
-Product* Factory::createProduct(std::string id)
-{
-	std::unordered_map<std::string, handler >::const_iterator i = idsTranslator.find(id);
-	if(i == idsTranslator.end())
-	{
-		printCommunicate("Handler for id: " + id + " is not registered.\n");
-		std::exit(-1);
-	}
-	return i->second(); 
-}
-
-
-std::vector<Product*> Factory::getProductsByID(std::string id)
-{
-	std::vector<Product*> products;
-	int JSONidx = storehouse.getJSONbyID(id);
-	if(JSONidx < 0)
-	{
-		printCommunicate("Object with id: " + id +" has no defined pattern");
-		return products;
-	}
-	PObject patternJSON = storehouse.getRoot(JSONidx);
-	while(true)
-	{
-		PObject currentJSON = parser.nextJSON();
-		if(currentJSON.get()->getType() == ObjectType::EndOfFile)
-			return products;
-		if(storehouse.compareJSONs(patternJSON, currentJSON))
-		{
-			Product* product = createProduct(id);
-			fulfillJSON(product, patternJSON, currentJSON);
-			products.push_back(product);
-		}
-	}
-}
-
-
 void Factory::fulfillJSON(Product* product, PObject patternJSON, PObject dataJSON)
 {
 	for(unsigned idx = 0; idx < dataJSON.get()->getChildrenSize(); ++idx)
 		findAndFulfillField(product, patternJSON, dataJSON.get()->getChild(idx));
-}
-
-
-Product* Factory::getJSONValue(PObject patternJSON, PObject dataJSON)
-{
-	std::string quotedId = findID(patternJSON);
-	std::string id = quotedId.substr(1, quotedId.size()-2);
-	Product* product = createProduct(id);
-	for(unsigned idx = 0; idx < dataJSON.get()->getChildrenSize(); ++idx)
-		findAndFulfillField(product, patternJSON, dataJSON.get()->getChild(idx));
-	return product;
 }
 
 
@@ -121,6 +54,141 @@ void Factory::fulfillField(Product* product, PObject patternField, PObject dataF
 	  void* value = getSampleTypeValue(patternField, dataField);
 		product->setMember(member, value);
 		deleteSampleTypeValue(patternField, value);
+	}
+}
+
+
+Product* Factory::getJSONValue(PObject patternJSON, PObject dataJSON)
+{
+	std::string quotedId = findID(patternJSON);
+	std::string id = quotedId.substr(1, quotedId.size()-2);
+	Product* product = createProduct(id);
+	for(unsigned idx = 0; idx < dataJSON.get()->getChildrenSize(); ++idx)
+		findAndFulfillField(product, patternJSON, dataJSON.get()->getChild(idx));
+	return product;
+}
+
+
+void* Factory::getArrayValue(PObject patternField, PObject dataField)
+{
+	std::string dataType = patternField.get()->getChild(1).get()->getChild(0).get()->getValue();
+	PObject dataValues = dataField.get()->getChild(1);
+	if(dataType == "\"int\"")
+	{
+		std::vector<int>* values = new std::vector<int>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			int value = std::stoi(childValue);
+			values->push_back(value);
+		}
+		return static_cast<void*>(values);
+	}
+	else if(dataType == "\"long\"")
+	{
+		std::vector<long>* values = new std::vector<long>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			long value = std::stol(childValue);
+			values->push_back(value);
+		}
+		return static_cast<void*>(values);
+	}
+	else if(dataType == "\"float\"")
+	{
+		std::vector<float>* values = new std::vector<float>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			float value = std::stof(childValue);
+			values->push_back(value);
+		}
+		return static_cast<void*>(values);
+	}
+	else if(dataType == "\"double\"")
+	{
+		std::vector<double>* values = new std::vector<double>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			double value = std::stod(childValue);
+			values->push_back(value);
+		}
+		return static_cast<void*>(values);
+	}
+	else if(dataType == "\"bool\"")
+	{
+		std::vector<bool>* values = new std::vector<bool>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			bool value = (childValue == "true") ? new bool(true) : new bool(false);
+			values->push_back(value);
+		}
+		return static_cast<void*>(values);
+	}
+	else if(dataType == "\"string\"")
+	{
+		std::vector<std::string>* values = new std::vector<std::string>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+		{
+			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
+			values->push_back(childValue);
+		}
+		return static_cast<void*>(values);
+	}
+	if(dataType == "JSON")
+	{
+		PObject pattern = patternField.get()->getChild(1).get()->getChild(0);
+		std::vector<Product*>* values = new std::vector<Product*>();
+		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
+    {
+			PObject JSONobject = dataValues.get()->getChild(idx);;
+		 	Product* product = getJSONValue(pattern, JSONobject);
+		 	if(product == nullptr)
+		 		return static_cast<void*>(values);
+		 	values->push_back(product);
+		 }
+		 return static_cast<void*>(values);
+	}
+}
+
+
+void* Factory::getSampleTypeValue(PObject patternField, PObject dataField)
+{
+	std::string dataValue = dataField.get()->getChild(1).get()->getValue();
+	std::string dataType = patternField.get()->getChild(1).get()->getValue();
+	if(dataType == "\"int\"")
+	{
+		void* intVal = new int(std::stoi(dataValue));
+		return intVal;
+	}
+	else if(dataType == "\"long\"")
+	{
+		void* longVal = new long(std::stol(dataValue));
+		return longVal;
+	}
+	else if(dataType == "\"float\"")
+	{
+		void* floatVal = new float(std::stof(dataValue));
+		return floatVal;
+	}
+	else if(dataType == "\"double\"")
+	{
+		void* doubleVal = new double(std::stod(dataValue));
+		return doubleVal;
+	}
+	else if(dataType == "\"bool\"")
+	{
+		void* boolVal = (dataValue == "true") ? new bool(true) : new bool(false);
+		return boolVal;
+	}
+	else if(dataType == "\"string\"")
+	{
+		dataValue = dataValue.substr(1, dataValue.size()-2);
+		void* stringVal = new std::string(dataValue);
+		return stringVal;
 	}
 }
 
@@ -211,126 +279,21 @@ void Factory::deleteArrayValue(PObject patternField, void* value)
 }
 
 
-void* Factory::getSampleTypeValue(PObject patternField, PObject dataField)
+void Factory::printCommunicate(std::string comm)
 {
-	std::string dataValue = dataField.get()->getChild(1).get()->getValue();
-	std::string dataType = patternField.get()->getChild(1).get()->getValue();
-	if(dataType == "\"int\"")
-	{
-		void* intVal = new int(std::stoi(dataValue));
-		return intVal;
-	}
-	else if(dataType == "\"long\"")
-	{
-		void* longVal = new long(std::stol(dataValue));
-		return longVal;
-	}
-	else if(dataType == "\"float\"")
-	{
-		void* floatVal = new float(std::stof(dataValue));
-		return floatVal;
-	}
-	else if(dataType == "\"double\"")
-	{
-		void* doubleVal = new double(std::stod(dataValue));
-		return doubleVal;
-	}
-	else if(dataType == "\"bool\"")
-	{
-		void* boolVal = (dataValue == "true") ? new bool(true) : new bool(false);
-		return boolVal;
-	}
-	else if(dataType == "\"string\"")
-	{
-		void* stringVal = new std::string(dataValue);
-		return stringVal;
-	}
+	std::cout << "[FACTORY] " << comm << std::endl;
 }
 
 
-void* Factory::getArrayValue(PObject patternField, PObject dataField)
+Product* Factory::createProduct(std::string id)
 {
-	std::string dataType = patternField.get()->getChild(1).get()->getChild(0).get()->getValue();
-	PObject dataValues = dataField.get()->getChild(1);
-	if(dataType == "\"int\"")
+	std::unordered_map<std::string, handler >::const_iterator i = idsTranslator.find(id);
+	if(i == idsTranslator.end())
 	{
-		std::vector<int>* values = new std::vector<int>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			int value = std::stoi(childValue);
-			values->push_back(value);
-		}
-		return static_cast<void*>(values);
+		printCommunicate("Handler for id: " + id + " is not registered.\n");
+		std::exit(-1);
 	}
-	else if(dataType == "\"long\"")
-	{
-		std::vector<long>* values = new std::vector<long>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			long value = std::stol(childValue);
-			values->push_back(value);
-		}
-		return static_cast<void*>(values);
-	}
-	else if(dataType == "\"float\"")
-	{
-		std::vector<float>* values = new std::vector<float>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			float value = std::stof(childValue);
-			values->push_back(value);
-		}
-		return static_cast<void*>(values);
-	}
-	else if(dataType == "\"double\"")
-	{
-		std::vector<double>* values = new std::vector<double>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			double value = std::stod(childValue);
-			values->push_back(value);
-		}
-		return static_cast<void*>(values);
-	}
-	else if(dataType == "\"bool\"")
-	{
-		std::vector<bool>* values = new std::vector<bool>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			bool value = (childValue == "true") ? new bool(true) : new bool(false);
-			values->push_back(value);
-		}
-		return static_cast<void*>(values);
-	}
-	else if(dataType == "\"string\"")
-	{
-		std::vector<std::string>* values = new std::vector<std::string>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-		{
-			std::string childValue = dataValues.get()->getChild(idx).get()->getValue();
-			values->push_back(childValue);
-		}
-		return static_cast<void*>(values);
-	}
-	if(dataType == "JSON")
-	{
-		PObject pattern = patternField.get()->getChild(1).get()->getChild(0);
-		std::vector<Product*>* values = new std::vector<Product*>();
-		for(unsigned idx = 0; idx < dataValues.get()->getChildrenSize(); ++idx)
-    {
-			PObject JSONobject = dataValues.get()->getChild(idx);;
-		 	Product* product = getJSONValue(pattern, JSONobject);
-		 	if(product == nullptr)
-		 		return static_cast<void*>(values);
-		 	values->push_back(product);
-		 }
-		 return static_cast<void*>(values);
-	}
+	return i->second(); 
 }
 
 
@@ -344,3 +307,42 @@ std::string Factory::findID(PObject JSONdata)
 			return child.get()->getChild(0).get()->getValue();
 	}
 }
+
+
+void Factory::registerProduct(std::string id, handler creator)
+{
+	idsTranslator[id] = creator;
+}
+
+
+void Factory::printProducts()
+{
+	for(auto pair: idsTranslator)
+		std::cout << pair.first << std::endl;
+}
+
+
+std::vector<Product*> Factory::getProductsByID(std::string id)
+{
+	std::vector<Product*> products;
+	int JSONidx = storehouse.getJSONbyID(id);
+	if(JSONidx < 0)
+	{
+		printCommunicate("Object with id: " + id +" has no defined pattern");
+		return products;
+	}
+	PObject patternJSON = storehouse.getRoot(JSONidx);
+	while(true)
+	{
+		PObject currentJSON = parser.nextJSON();
+		if(currentJSON.get()->getType() == ObjectType::EndOfFile)
+			return products;
+		if(storehouse.compareJSONs(patternJSON, currentJSON))
+		{
+			Product* product = createProduct(id);
+			fulfillJSON(product, patternJSON, currentJSON);
+			products.push_back(product);
+		}
+	}
+}
+

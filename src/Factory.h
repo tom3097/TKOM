@@ -13,25 +13,31 @@ private:
 	typedef Product* (*handler)(void);
 	Storehouse storehouse;
 	Parser parser;
-	void printCommunicate(std::string);
-	void deleteJSONValue(void* value);
-	std::unordered_map<std::string, handler > idsTranslator; 
-	std::string findID(PObject JSONdata);
+	std::unordered_map<std::string, handler > idsTranslator;
+
+	void fulfillJSON(Product* product, PObject patternJSON, PObject dataJSON);
+	void findAndFulfillField(Product* product, PObject patternJSON, PObject dataField);
+	void fulfillField(Product* product, PObject patternField, PObject dataField);
+
+	Product* getJSONValue(PObject patternJSON, PObject dataJSON);
 	void* getArrayValue(PObject patternField, PObject dataField);
 	void* getSampleTypeValue(PObject dataField, PObject patternField);
-	void fulfillField(Product* product, PObject patternField, PObject dataField);
-	void findAndFulfillField(Product* product, PObject patternJSON, PObject dataField);
-	Product* getJSONValue(PObject patternJSON, PObject dataJSON);
-	void fulfillJSON(Product* product, PObject patternJSON, PObject dataJSON);
-	Product* createProduct(std::string id);
+
 	void deleteSampleTypeValue(PObject patternField, void* value);
 	void deleteArrayValue(PObject patternField, void* value);
+	void deleteJSONValue(void* value);
+
+	void printCommunicate(std::string);
+	std::string findID(PObject JSONdata);
+	Product* createProduct(std::string id);
 public:
 	Factory(std::string configJSONpath, std::string dataJSONpath);
 	~Factory();
-	std::vector<Product*> getProductsByID(std::string id);
+
 	void registerProduct(std::string id, handler creator);
 	void printProducts();
+	
+	std::vector<Product*> getProductsByID(std::string id);
 };
 
 #endif

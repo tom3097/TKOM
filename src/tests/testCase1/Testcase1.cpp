@@ -88,10 +88,7 @@ void ClassC::print(std::string tabs)
 {
 	std::cout << tabs << "classBVectorMember1 = " << std::endl;
 	for(unsigned idx = 0; idx < classBVectorMember1.size(); ++idx)
-	{
 		classBVectorMember1[idx].print(tabs+"\t");
-		std::cout << std::endl;
-	}
 	std::cout << tabs << "classAMember = " << std::endl;
 	classAMember.print(tabs+"\t");
 	std::cout << tabs << "stringMember1 = " << stringMember1 << std::endl;
